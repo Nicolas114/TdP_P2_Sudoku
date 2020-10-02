@@ -12,7 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
-import logica.*;
+import logica.Sudoku;
 
 public class SudokuGUI extends JFrame {
 
