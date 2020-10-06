@@ -1,31 +1,51 @@
 package logica;
 
 import java.io.*;
-import java.lang.*;
-
+import java.util.Random;
 import gui.SudokuGUI;
 
 public class Sudoku {
 
-	private Bloque tablero[][];
-	private int cant_bloques;
+	private Celda tablero[][];
+	private int cant_filas;
 	private SudokuGUI app;
 
-	public Sudoku(String path) {
-		this.cant_bloques = 3;
-		//tablero = new Bloque[cant_bloques][cant_bloques];
-		int[][] filematrix = procesar_archivo(path);
-
-		/*for (int i=0; i < cant_bloques; i++) {
-			for (int j=0; j < cant_bloques; j++) {
-
-				this.tablero[i][j].armarCeldas();
+	public Sudoku() {
+		String path = "/home/nicolas/Escritorio/sudoku";
+		this.cant_filas = 9;
+		tablero = new Celda[cant_filas][cant_filas];
+		Celda[][] filematrix = procesar_archivo(path);
+		
+		for (int i=0; i < cant_filas; i++) {
+			int contador = 0;
+			for (int j=0; j < cant_filas; j++) {
+				Random rand = new Random();
+				int value = rand.nextInt(2);
+				tablero[i][j] = new Celda();
+				
+				if (contador < 4 && value == 0) {
+					contador++;
+					tablero[i][j].setValor(0);
+				}
+				else {
+					tablero[i][j].setValor(filematrix[i][j].getValor());
+				}
 			}
-		}*/
+		}
+		
+		//BORRAR >>>>> MUESTRA LA MATRIZ >>>> BORRAR
+		for (int o=0; o < tablero.length; o++) {
+			for (int u = 0; u < tablero[0].length; u++) {
+				System.out.print(tablero[o][u].getValor() + " ");
+			}
+			System.out.println();
+		}
+		
+		System.out.println();
 	}
 
-	private int[][] procesar_archivo(String path) {
-		int [][] matrix = new int[9][9];
+	private Celda[][] procesar_archivo(String path) {
+		Celda [][] matrix = new Celda[9][9];
 		try {
 			BufferedReader file = new BufferedReader(new FileReader(path));
 			String linea = "";
@@ -38,7 +58,8 @@ public class Sudoku {
 					
 					for (int i=0; i < arreglo_linea.length; i++) {
 						int numero = Integer.parseInt((arreglo_linea[i]));
-						matrix[f][i] = numero;
+						matrix[f][i] = new Celda(); 
+						matrix[f][i].setValor(numero);
 					}
 					
 					f++;
@@ -53,43 +74,43 @@ public class Sudoku {
 				}
 			}
 			
-			for (int o=0; o < matrix.length; o++) {
-				for (int u = 0; u < matrix[0].length; u++) {
-					System.out.print(matrix[o][u] + " ");
-				}
-				System.out.println();
-			}
-			
-			System.out.println(valida);
-			
+			file.close();
+			System.out.println("Es valida: " + valida); //BORRAR
 		} catch (IOException e) {
 			e.printStackTrace();
 		} catch (NumberFormatException e) {
 			e.printStackTrace();
 		}
 		
+		
 		return matrix;
 	}
 
-	private boolean chequear_validez(int[][] matrix, int fila, int columna) {
+	private boolean chequear_validez(Celda[][] matrix, int fila, int columna) {
 		return (restriccionFila(matrix, fila, columna))
 				&& (restriccionColumna(matrix, fila, columna))
 				&& (restriccionSubseccion(matrix, fila, columna));
 	}
 
-	private boolean restriccionSubseccion(int[][] matrix, int fila, int columna) {
+	private boolean restriccionSubseccion(Celda[][] matrix, int fila, int columna) {
 		boolean cumple = true;
 		int apariciones = 0;
 		
-		int subseccionFilaStart = (fila/3)* 3;
+		/*int subseccionFilaStart = (fila/3)* 3;
 		int subseccionFilaEnd = subseccionFilaStart + 3;
 		
 		int subseccionColumnaStart = (columna/3)*3;
 		int subseccionColumnaEnd = subseccionColumnaStart + 3;
+		*/
 		
-		for (int r=subseccionFilaStart; r < subseccionFilaEnd; r++) {
-			for (int c=subseccionColumnaStart; c < subseccionColumnaEnd; c++) {
-				if (matrix[fila][columna] == matrix[r][c])
+		//same as above but simplified
+		
+		int r = fila - fila%3;
+		int c = columna - columna%3;
+		
+		for (int i=r; i < r+3; i++) {
+			for (int j=c; j < c; j++) {
+				if (matrix[fila][columna].getValor().equals(matrix[r][c].getValor()))
 					apariciones++;
 			}
 		}
@@ -100,12 +121,12 @@ public class Sudoku {
 		return cumple;
 	}
 
-	private boolean restriccionColumna(int[][] matrix, int fila, int columna) {
+	private boolean restriccionColumna(Celda[][] matrix, int fila, int columna) {
 		boolean cumple = true;
 		int apariciones = 0;
 		
-		for (int i=0; i < matrix[0].length && (apariciones == 1); i++) {
-			if (matrix[fila][columna] == matrix[i][columna])
+		for (int i=0; i < matrix[0].length && (apariciones <= 1); i++) {
+			if (matrix[fila][columna].getValor().equals(matrix[i][columna].getValor()))
 				apariciones++;
 		}
 		
@@ -115,12 +136,12 @@ public class Sudoku {
 		return cumple;
 	}
 
-	private boolean restriccionFila(int[][] matrix, int fila, int columna) {
+	private boolean restriccionFila(Celda[][] matrix, int fila, int columna) {
 		boolean cumple = true;
 		int apariciones = 0;
 		
-		for (int i=0; i < matrix.length && (apariciones == 1); i++) {
-			if (matrix[fila][columna] == matrix[fila][i])
+		for (int i=0; i < matrix.length && (apariciones <= 1); i++) {
+			if (matrix[fila][columna].getValor().equals(matrix[fila][i].getValor()))
 				apariciones++;
 		}
 		
@@ -130,19 +151,19 @@ public class Sudoku {
 		return cumple;
 	}
 
-	public int cantBloques() {
-		return cant_bloques;
+	public int cantFilas() {
+		return cant_filas;
 	}
 
-	public Bloque getBloque(int i, int j) {
+	public Celda getCelda(int i, int j) {
 		return this.tablero[i][j];
 	}
 	
 	public static void main(String args[]) {
-		Sudoku game = new Sudoku("/home/nicolas/Escritorio/sudoku");
-		
-		
-		
-		
+		Sudoku game = new Sudoku();
+	}
+
+	public void accionar(Celda c) {
+		c.actualizar();
 	}
 }
