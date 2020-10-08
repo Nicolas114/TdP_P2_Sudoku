@@ -13,6 +13,7 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
 
@@ -64,6 +65,7 @@ public class SudokuGUI extends JFrame {
 		panel_juego.setBounds(30, 30, 538, 430);
 		panel_juego.setLayout(new GridLayout(juego.cantFilas(), 0, 0, 0));
 		contentPane.add(panel_juego);
+		
 		for (int i=0; i < juego.cantFilas(); i++) {
 			for (int j=0; j < juego.cantFilas(); j++) {
 				Celda c = juego.getCelda(i, j);
@@ -76,10 +78,8 @@ public class SudokuGUI extends JFrame {
 					celdalabel.setBorder(BorderFactory.createMatteBorder(4, 1, 1, 1, Color.WHITE));
 				if (j == 3 || j == 6)
 					celdalabel.setBorder(BorderFactory.createMatteBorder(1, 4, 1, 1, Color.WHITE));
-				if ( (i == 3 && j == 3) || (i == 3 && j == 6) || (i == 6 && j == 3) || (i == 6 && j == 6))
+				if ((i == 3 && j == 3) || (i == 3 && j == 6) || (i == 6 && j == 3) || (i == 6 && j == 6))
 					celdalabel.setBorder(BorderFactory.createMatteBorder(4, 4, 1, 1, Color.WHITE));
-				
-				juego.accionar(c);
 				
 				panel_juego.add(celdalabel);
 
@@ -94,10 +94,17 @@ public class SudokuGUI extends JFrame {
 				celdalabel.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent e) {
-						juego.accionar(c);
-						redimensionar(celdalabel,grafico);
+						if (juego.esEditable(c)) {
+							juego.accionar(c);
+							redimensionar(celdalabel,grafico);
+							
+							System.out.println("Es valida: " + juego.juego_valido()); //Borrar
+							juego.mostrarTablero(); //BORRAR
+							
+						}
 					}
 				});
+				
 			}
 		}
 	}

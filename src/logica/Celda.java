@@ -4,12 +4,22 @@ public class Celda {
 	
 	private Integer valor;
 	private EntidadGrafica entidad_graf;
+	private boolean editable;
 	
 	public Celda() {
 		this.valor = null;
 		this.entidad_graf = new EntidadGrafica();
+		this.editable = true;
 	}
 	
+	public boolean isEditable() {
+		return editable;
+	}
+
+	public void setEditable(boolean editable) {
+		this.editable = editable;
+	}
+
 	public EntidadGrafica getEntidadGrafica() {
 		return this.entidad_graf;
 	}
@@ -19,7 +29,11 @@ public class Celda {
 	}
 	
 	public void setValor(Integer valor) {
-		this.valor = valor;
+		
+		if (valor != null && valor-1 < this.getCantElementos()) {
+			this.valor = valor;
+			this.entidad_graf.actualizar(this.valor-1);
+		}
 	}
 	
 	public int getCantElementos() {
@@ -27,13 +41,19 @@ public class Celda {
 	}
 
 	public void actualizar() {
-		entidad_graf.actualizar(this.valor-1);
 		
 		if (this.valor != null && this.valor < this.getCantElementos()) {
 			this.valor++;
 		}
 		else {
-			this.valor = 0;
+			this.valor = 1;
 		}
+		
+		entidad_graf.actualizar(this.valor-1);
+		
+	}
+	
+	public void setGrafica(EntidadGrafica g) {
+		this.entidad_graf = g;
 	}
 }
