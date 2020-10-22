@@ -7,10 +7,12 @@ public class Sudoku {
 
 	private Celda tablero[][];
 	private int cant_filas;
+	private boolean errores[][];
 
-	public Sudoku() {
+	public Sudoku() throws InvalidFileException {
 		String path = "sudoku.txt";
 		this.cant_filas = 9;
+		this.errores = new boolean[cant_filas][cant_filas];
 		tablero = new Celda[cant_filas][cant_filas];
 		procesar_archivo(path);
 		
@@ -22,8 +24,8 @@ public class Sudoku {
 			for (int j=0; j < cant_filas; j++) {
 				Random rand = new Random();
 				int value = rand.nextInt(2);
-				
-				if (contador < 6 && value == 0) {
+				errores[i][j] = false;
+				if (contador < 1 && value == 0) { //CAMBIAR A CONTADOR < 6
 					contador++;
 					tablero[i][j].setValor(0);
 					tablero[i][j].setGrafica(new EntidadGrafica());
@@ -35,9 +37,235 @@ public class Sudoku {
 		//BORRAR >>>>> MUESTRA LA MATRIZ >>>> BORRAR
 		System.out.println("Despues de poner ceros");
 		mostrarTablero();
+		mostrarErrores();
+	}
+	
+	public void accionar(Celda c) {
+		for (int i = 0; i < errores.length; i++) {
+			for (int j = 0; j < errores.length; j++) {
+				descartar_errores(tablero[i][j]);				
+			}
+		}
+		c.actualizar();
+		this.errores[c.getFila()][c.getColumna()] = false;
+		for (int i = 0; i < errores.length; i++) {
+			for (int j = 0; j < errores.length; j++) {
+				this.buscar_errores(i, j);
+			}
+		}
+		//this.buscar_errores(c.getFila(), c.getColumna());
+		//this.buscar_errores_panel(c.getFila(), c.getColumna());
+	}
+	
+	private void descartar_errores(Celda celda) {
+		int fila = celda.getFila();
+		int columna = celda.getColumna();
+		int apariciones = 0;
+		int fila_error = 0;
+		int col_error = 0;
+		
+		//para la parte de filas
+		for (int i = 0; i < errores.length; i++) {
+				if (i != columna) {
+					if (tablero[fila][columna].getValor().equals(tablero[fila][i].getValor())) {
+						apariciones++;
+						fila_error = fila;
+						col_error = i;
+					}
+				}
+		}
+		
+		if (apariciones == 1) {
+			boolean atado = false;
+			
+			for (int i = 0; i < errores.length; i++) {
+				if (i != fila_error) {
+					if (tablero[i][col_error].getValor().equals(tablero[fila_error][col_error].getValor())) {
+						atado = true;
+					}
+				}
+			}
+			
+			if (!atado)
+				this.errores[fila_error][col_error] = false;
+		}
+		
+		//para la parte de columnas
+		apariciones = 0;
+		for (int i = 0; i < errores.length; i++) {
+			if (i != fila) {
+				if (tablero[i][columna].getValor().equals(tablero[fila][columna].getValor())) {
+					apariciones++;
+					fila_error = i;
+					col_error = columna;
+				}
+			}
+		}
+		
+		if (apariciones == 1) {
+			boolean atado = false;
+			
+			for (int i = 0; i < errores.length; i++) {
+				if (i != col_error) {
+					if (tablero[fila_error][i].getValor().equals(tablero[fila_error][col_error].getValor())) {
+						atado = true;
+					}
+				}
+			}
+			
+			if (!atado)
+				this.errores[fila_error][col_error] = false;
+		}
+		
+		//para los paneles
+		apariciones = 0;
+		int r = fila - fila%this.cantFilasSubpanel();
+		int c = columna - columna%this.cantFilasSubpanel();
+		
+		for (int i=r; i < r+3; i++) {
+			for (int j=c; j < c+3; j++) {
+				if (i != fila && j != columna && tablero[i][j].getValor() != 0) {
+					if (tablero[i][j].getValor().equals(tablero[fila][columna].getValor())) {
+						fila_error = i;
+						col_error = j;
+						
+						//chequear si está atada a otro elem en su fila o col
+						boolean atado = false;
+						
+						//fila
+						for (int k = 0; k < errores.length && !atado; k++) {
+							if (k != fila_error && tablero[k][col_error].getValor() != 0) {
+								if (tablero[k][col_error].getValor().equals(tablero[fila_error][col_error].getValor())) {
+									atado = true;
+								}
+							}
+						}
+						
+						if (!atado) {
+							errores[fila_error][col_error] = true;
+						}
+						
+						if (true) {
+							atado = false;
+							
+							for (int k = 0; k < errores.length && !atado; k++) {
+								if (k != col_error && tablero[fila_error][k].getValor() != 0) {
+									if (tablero[fila_error][k].getValor().equals(tablero[fila_error][col_error].getValor())) {
+										atado = true;
+									}
+								}
+							}
+							
+							if (!atado) {
+								errores[fila_error][col_error] = false;
+							}
+						}
+					}
+				}
+			}
+		}
 	}
 
-	private void procesar_archivo(String path) {
+	private void buscar_errores(int fila, int columna) {
+		Integer valor = tablero[fila][columna].getValor();
+		for (int i = 0; i < tablero.length; i++) {
+			if (i != columna && tablero[fila][i].getValor() != 0) {
+				if (valor.equals(tablero[fila][i].getValor())) {
+					errores[fila][columna] = true;
+					errores[fila][i] = true;
+				}
+			}
+		}
+		
+		for (int j = 0; j < tablero.length; j++) {
+			if (j != fila && tablero[j][columna].getValor() != 0) {
+				if (valor.equals(tablero[j][columna].getValor())) {
+					errores[j][columna] = true;
+					errores[fila][columna] = true;
+				}
+			}
+		}
+		
+		int r = fila - fila%this.cantFilasSubpanel();
+		int c = columna - columna%this.cantFilasSubpanel();
+		
+		for (int i=r; i < r+3; i++) {
+			for (int j=c; j < c+3; j++) {
+				if (i != fila && j != columna && tablero[i][j].getValor() != 0) {
+					if (tablero[i][j].getValor().equals(tablero[fila][columna].getValor())) {
+						errores[i][j] = true;
+						errores[fila][columna] = true;
+					}
+				}
+			}
+		}
+	}
+	
+	public int cantFilas() {
+		return cant_filas;
+	}
+
+	public int cantFilasSubpanel() {
+		return this.cant_filas/3;
+	}
+	
+	public boolean compararCelda(Celda c1, Celda c2) {
+		return c1.getValor().equals(c2.getValor());
+	}
+
+	public boolean esEditable(Celda c) {
+		return c.isEditable();
+	}
+	
+	public Celda getCelda(int i, int j) {
+		return this.tablero[i][j];
+	}
+
+	public Celda[][] obtenerTablero() {
+		return tablero;
+	}
+
+	public boolean[][] getErrores(){
+		return this.errores;
+	}
+
+	public void mostrarErrores() {
+		for (int i=0; i < this.errores.length; i++) {
+			for (int j=0; j < this.errores[0].length; j++) {
+				if (errores[i][j])
+					System.out.print("t ");
+				else
+					System.out.print("f ");
+			}
+			System.out.println();
+		}
+	}
+
+	public boolean juego_valido() {
+		boolean valido = true;
+		for (int i=0; i < tablero.length && valido; i++) {
+			for (int j=0; j < tablero[0].length && valido; j++) {
+//				valido = chequear_validez(tablero, i, j);
+//				valido = tablero[i][j].getValor() != 0;
+				valido = errores[i][j] == false && tablero[i][j].getValor() != 0;
+			}
+		}
+		
+		return valido;
+	}
+
+	public void mostrarTablero() {
+		for (int o=0; o < tablero.length; o++) {
+			for (int u = 0; u < tablero[0].length; u++) {
+				System.out.print(tablero[o][u].getValor() + " ");
+			}
+			System.out.println();
+		}
+		
+		System.out.println("-------");
+	}
+
+	private void procesar_archivo(String path) throws InvalidFileException {
 		try {
 			BufferedReader file = new BufferedReader(new FileReader(path));
 			String linea = "";
@@ -50,7 +278,7 @@ public class Sudoku {
 					
 					for (int i=0; i < arreglo_linea.length; i++) {
 						int numero = Integer.parseInt((arreglo_linea[i]));
-						tablero[f][i] = new Celda(); 
+						tablero[f][i] = new Celda(f, i); 
 						tablero[f][i].setValor(numero);
 						tablero[f][i].setEditable(false);
 					}
@@ -59,49 +287,52 @@ public class Sudoku {
 				}
 			}
 			
-			boolean valida = juego_valido();
-		//hacer algo con que si no es válido el juego desde el archivo
-			
 			file.close();
 			
+			boolean valida = juego_valido();
+			
+			if (!valida) {
+				throw new InvalidFileException();
+			}
+			
 		} catch (IOException e) {
-			e.printStackTrace();
+			throw new InvalidFileException();
 		} catch (NumberFormatException e) {
-			e.printStackTrace();
+			throw new InvalidFileException();
 		}
 	}
 
-	public boolean juego_valido() {
-		boolean valido = true;
-		for (int i=0; i < tablero.length && valido; i++) {
-			for (int j=0; j < tablero[0].length && valido; j++) {
-				valido = chequear_validez(tablero, i, j);
+	private boolean restriccionColumna(Celda[][] matrix, int fila, int columna) {
+		boolean cumple = true;
+		int apariciones = 0;
+		
+		for (int i=0; i < matrix[0].length && (apariciones < 2); i++) {
+			if (matrix[fila][columna].getValor().equals(matrix[i][columna].getValor())) {
+				apariciones++;
 			}
 		}
 		
-		return valido;
-	}
-	
-	private boolean chequear_validez(Celda[][] matrix, int fila, int columna) {
-		boolean validez = (restriccionFila(matrix, fila, columna))
-					&& (restriccionColumna(matrix, fila, columna))
-					&& (restriccionSubseccion(matrix, fila, columna))
-					&& (tableroCompleto(matrix));
+		if (apariciones > 1)
+			cumple = false;
 		
-		return validez;
+		return cumple;
 	}
 
-	private boolean tableroCompleto(Celda[][] matrix) {
-		boolean hayCeros = false;
-		for (int i=0; i < matrix.length && !hayCeros; i++) {
-			for (int j=0; j < matrix[0].length && !hayCeros; j++) {
-				if (matrix[i][j].getValor() == 0) {
-					hayCeros = true;
-				}
+	private boolean restriccionFila(Celda[][] matrix, int fila, int columna) {
+		boolean cumple = true;
+		int apariciones = 0;
+		
+		for (int i=0; i < matrix.length && apariciones < 2; i++) {
+			if (matrix[fila][columna].getValor().equals(matrix[fila][i].getValor())) {
+				
+				apariciones++;
 			}
 		}
 		
-		return !hayCeros;
+		if (apariciones > 1)
+			cumple = false;
+		
+		return cumple;
 	}
 
 	private boolean restriccionSubseccion(Celda[][] matrix, int fila, int columna) {
@@ -133,71 +364,9 @@ public class Sudoku {
 		return cumple;
 	}
 
-	private boolean restriccionColumna(Celda[][] matrix, int fila, int columna) {
-		boolean cumple = true;
-		int apariciones = 0;
-		
-		for (int i=0; i < matrix[0].length && (apariciones < 2); i++) {
-			if (matrix[fila][columna].getValor().equals(matrix[i][columna].getValor())) {
-				apariciones++;
-			}
-		}
-		
-		if (apariciones > 1)
-			cumple = false;
-		
-		return cumple;
-	}
-
-	private boolean restriccionFila(Celda[][] matrix, int fila, int columna) {
-		boolean cumple = true;
-		int apariciones = 0;
-		
-		for (int i=0; i < matrix.length && (apariciones < 2); i++) {
-			if (matrix[fila][columna].getValor().equals(matrix[fila][i].getValor())) {
-				apariciones++;
-			}
-		}
-		
-		if (apariciones > 1)
-			cumple = false;
-		
-		return cumple;
-	}
-
-	public int cantFilas() {
-		return cant_filas;
-	}
-
-	public Celda getCelda(int i, int j) {
-		return this.tablero[i][j];
-	}
-	
-	public static void main(String args[]) {
-		Sudoku game = new Sudoku();
-		
-	}
-
-	public void accionar(Celda c) {
-		c.actualizar();
-	}
-
-	public Celda[][] obtenerTablero() {
-		return tablero;
-	}
-	
-	public boolean esEditable(Celda c) {
-		return c.isEditable();
-	}
-	
-	public void mostrarTablero() {
-		for (int o=0; o < tablero.length; o++) {
-			for (int u = 0; u < tablero[0].length; u++) {
-				System.out.print(tablero[o][u].getValor() + " ");
-			}
-			System.out.println();
-		}
-		
-		System.out.println("-------");
+	private boolean chequear_validez(Celda[][] matrix, int fila, int columna) {
+		return (restriccionFila(matrix, fila, columna))
+				&& (restriccionColumna(matrix, fila, columna))
+				&& (restriccionSubseccion(matrix, fila, columna));
 	}
 }
