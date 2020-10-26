@@ -13,8 +13,6 @@ import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JLayeredPane;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.border.EmptyBorder;
@@ -29,7 +27,7 @@ import java.awt.event.ActionEvent;
 public class SudokuGUI extends JFrame {
 
 	/**
-	 * Launch the application.
+	 * Inicia la ejecución del juego.
 	 */
 	public static void main(String[] args) {
 		EventQueue.invokeLater(new Runnable() {
@@ -50,7 +48,7 @@ public class SudokuGUI extends JFrame {
 	private Reloj reloj;
 
 	/**
-	 * Create the frame.
+	 * Crea la ventana donde se ubicarán todos los componentes del juego.
 	 */
 	public SudokuGUI() {
 		setResizable(false);
@@ -65,7 +63,7 @@ public class SudokuGUI extends JFrame {
 			JPanel[][] sub_paneles = new JPanel[juego.cantFilasSubpanel()][juego.cantFilasSubpanel()];
 
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-			setBounds(100, 100, 600, 597);
+			setBounds(250, 150, 600, 489);
 			setTitle("Sudoku");
 			contentPane = new JPanel();
 			contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
@@ -73,7 +71,7 @@ public class SudokuGUI extends JFrame {
 			contentPane.setBackground(new Color(59, 63, 72));
 			setContentPane(contentPane);
 			
-			reloj.setBounds(87, 400, 268, 37);
+			reloj.setBounds(75, 400, 302, 53);
 
 			panel_juego.setBackground(new Color(59,63,72));
 			panel_juego.setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, Color.BLACK));
@@ -89,7 +87,7 @@ public class SudokuGUI extends JFrame {
 					mostrarReglas();
 				}
 			});
-			botonLeerReglas.setBounds(442, 72, 120, 34);
+			botonLeerReglas.setBounds(442, 124, 120, 34);
 			contentPane.add(botonLeerReglas);
 		
 			configurar_subPaneles(sub_paneles);
@@ -102,7 +100,7 @@ public class SudokuGUI extends JFrame {
 					boton_comienzo.setEnabled(false);
 				}
 			});
-			boton_comienzo.setBounds(442, 30, 120, 30);
+			boton_comienzo.setBounds(442, 82, 120, 30);
 			contentPane.add(boton_comienzo);
 			
 		}
@@ -112,17 +110,24 @@ public class SudokuGUI extends JFrame {
 		}
 	}
 	
+	/**
+	 * Muestra las reglas asociadas al juego en cuestión.
+	 */
 	private void mostrarReglas() {
 		String informacion = "REGLAS\n" + 
 				"Para ganar, usted debe completar todas las casillas vacías con solo uno de los 9 números romanos disponibles.\n"
 				+ "Una misma fila no puede contener números repetidos.\n"
 				+ "Una misma columna no puede contener números repetidos.\n"
-				+ "Un mismo panel no puede contener números repetidos.\n\n"
+				+ "Un mismo panel no puede contener números repetidos.\n"
+				+ "Puede re-leer las reglas en cualquier momento, pero el cronómetro no se detendrá.\n"
 				+ "¡Mucha suerte!";
 		JOptionPane.showMessageDialog(contentPane, informacion);
-		
 	}
 	
+	/**
+	 * Inicia el juego.
+	 * @param sub_paneles Paneles donde se ubicarán las celdas así como decoración extra.
+	 */
 	private void iniciar_juego(JPanel[][] sub_paneles) {
 		
 		for (int i=0; i < juego.cantFilas(); i++) {
@@ -156,10 +161,9 @@ public class SudokuGUI extends JFrame {
 							juego.accionar(c);
 							redimensionar(celdabutton,grafico);
 
-
 							boolean errores[][] = juego.getErrores();
-							for (int k = 0; k < botones.length; k++) {
-								for (int l = 0; l < botones.length; l++) {
+							for (int k = 0; k < juego.cantFilas(); k++) {
+								for (int l = 0; l < juego.cantFilas(); l++) {
 									if (errores[k][l]) {
 										botones[k][l].setBackground(new Color(255,0,0));
 									}
@@ -169,27 +173,30 @@ public class SudokuGUI extends JFrame {
 								}
 							}
 
-							System.out.println("Es valida: " + juego.juego_valido()); //Borrar
-							juego.mostrarTablero(); //BORRAR
+							//Instrucciones para la consola.
+							juego.mostrarTablero();
+							System.out.println("---------");
 							juego.mostrarErrores();
+							System.out.println("---------");
 
 							if (juego.juego_valido()) {
 								mostrar_juego_ganado();
 							}
 						}
-
 					});
-
 				}
 			}
 		}
 	}
 	
+	/**
+	 * Procedimiento encargado de mostrar la información referente a cuando el usuario gana.
+	 */
 	private void mostrar_juego_ganado() {
 		reloj.detener();
 		
-		for (int k = 0; k < botones.length; k++) {
-			for (int l = 0; l < botones.length; l++) {
+		for (int k = 0; k < juego.cantFilas(); k++) {
+			for (int l = 0; l < juego.cantFilas(); l++) {
 				botones[k][l].setEnabled(false);
 			}
 		}
@@ -200,8 +207,14 @@ public class SudokuGUI extends JFrame {
 		
 		JOptionPane.showMessageDialog(panel_juego, "Usted ganó con el tiempo de \n"
 				+ hor + " horas, " + min + " minutos, " + seg + " segundos.");
+		
+		System.exit(1);
 	}
 
+	/**
+	 * Configura los subpaneles donde se ubican las celdas del juego. El procedimiento se enfoca más en una configuración gráfica.
+	 * @param sub_paneles Matriz de subpaneles que se va a configurar.
+	 */
 	private void configurar_subPaneles(JPanel[][] sub_paneles) {
 		for (int i=0; i < juego.cantFilasSubpanel(); i++) {
 			for (int j=0; j < juego.cantFilasSubpanel(); j++){
@@ -229,6 +242,9 @@ public class SudokuGUI extends JFrame {
 		}		
 	}
 
+	/**
+	 * Ajusta el tamaño de los componentes gráficos para que se adapten al frame.
+	 */
 	private void redimensionar(JButton label, ImageIcon grafico) {
 		Image image = grafico.getImage();
 		if (image != null) {  
@@ -237,4 +253,5 @@ public class SudokuGUI extends JFrame {
 			label.repaint();
 		}
 	}
+	
 }

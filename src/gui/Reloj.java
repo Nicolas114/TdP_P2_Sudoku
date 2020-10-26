@@ -12,18 +12,27 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.Timer;
 
+/**
+ * Clase representativa del componente gráfico de un cronómetro. Maneja tanto la parte gráfica
+ * como la parte lógica.
+ * @author Nicolás González
+ *
+ */
 @SuppressWarnings("serial")
 public class Reloj extends JPanel{
 	
 	private Timer timer;
-	private int segundos, minutos, horas;
 	private ImageIcon[] iconos;
-	private JLabel decenaH, unidadH, decenaM, unidadM, decenaS, unidadS, dospuntos;
+	private int segundos, minutos, horas;
+	private JLabel decenaH, unidadH, decenaM, unidadM, decenaS, unidadS;
 	
+	/**
+	 * Inicializa el reloj y configura sus atributos.
+	 */
 	public Reloj() {
 		this.iconos = new ImageIcon[11];
 		this.setBackground(Color.WHITE);
-		this.setBorder(BorderFactory.createMatteBorder(3, 3, 3, 3, Color.black));
+		this.setBorder(BorderFactory.createMatteBorder(3, 3, 3, 3, Color.BLACK));
 		JLabel dp1 = new JLabel();
 		JLabel dp2 = new JLabel();
 		decenaH = new JLabel();
@@ -32,12 +41,11 @@ public class Reloj extends JPanel{
 		unidadM = new JLabel();
 		decenaS = new JLabel();
 		unidadS = new JLabel();
-		dospuntos = new JLabel();
 		horas = 0;		
 		minutos = 0;
 		segundos = 0;
 		
-		setImagenes();
+		organizarImagenes();
 		organizar(dp1, dp2);
 		timer = new Timer (1000, (ActionListener) new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
@@ -71,36 +79,37 @@ public class Reloj extends JPanel{
 	}
 	
 	/**
-	 * Agrega los diferentes labels al panel y se definen sus vistas gráficas.
-	 * @param paneldosP1 - Label al que se le setea una imagen.
-	 * @param paneldosP2 - Label al que se le setea una imagen.
+	 * Organiza los paneles de la gráfica de los "dos puntos".
+	 * @param paneldosP1 Componente gráfico correspondiente al primer panel de "dos puntos".
+	 * @param paneldosP2 Componente gráfico correspondiente al segundo panel de "dos puntos".
 	 */
 	public void organizar(JLabel paneldosP1, JLabel paneldosP2) {	
 		this.setLayout(new GridLayout(0, 8, 0, 0));
 		
-		decenaH.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.black));
+		decenaH.setBorder(BorderFactory.createMatteBorder(0, 0, 0, 1, Color.BLACK));
 		this.add(decenaH);
-		unidadH.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.black));
+		unidadH.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.BLACK));
 		this.add(unidadH);
 		
 		paneldosP1.setIcon(iconos[10]);
 		paneldosP1.setSize(30, 30);
 		redimensionar(paneldosP1, iconos[10]);
-		paneldosP1.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.black));
+		paneldosP1.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.BLACK));
 		this.add(paneldosP1);
 		
-		decenaM.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.black));
+		decenaM.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.BLACK));
 		this.add(decenaM);
-		unidadM.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.black));
+		unidadM.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.BLACK));
 		this.add(unidadM);
 		
 		paneldosP2.setIcon(iconos[10]);
-		paneldosP2.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.black));
+		paneldosP2.setSize(30, 30);
+		paneldosP2.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.BLACK));
 		this.add(paneldosP2);
 		
-		decenaS.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.black));
+		decenaS.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 1, Color.BLACK));
 		this.add(decenaS);
-		unidadS.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.black));
+		unidadS.setBorder(BorderFactory.createMatteBorder(0, 1, 0, 0, Color.BLACK));
 		this.add(unidadS);
 	}
 	
@@ -142,8 +151,12 @@ public class Reloj extends JPanel{
 		return horas;
 	}
 	
-	public void setImagenes() {		
-		for(int i=0; i<11; i++) {
+	/**
+	 * Organiza las imágenes del cronómetro.
+	 */
+	public void organizarImagenes() {
+		
+		for(int i=0; i<this.iconos.length; i++) {
 			iconos[i] = new ImageIcon(getClass().getResource("/img/"+i+"c.png"));
 		}
 	}
