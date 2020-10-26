@@ -10,11 +10,11 @@ public class Sudoku {
 	private boolean errores[][];
 
 	public Sudoku() throws InvalidFileException {
-		String path = "sudoku.txt";
+		InputStream in = Sudoku.class.getClassLoader().getResourceAsStream("logica/sudoku.txt");
 		this.cant_filas = 9;
 		this.errores = new boolean[cant_filas][cant_filas];
 		tablero = new Celda[cant_filas][cant_filas];
-		procesar_archivo(path);
+		procesar_archivo(in);
 		
 		System.out.println("Despues de procesar archivo");
 		mostrarTablero(); //BORRAR
@@ -265,9 +265,10 @@ public class Sudoku {
 		System.out.println("-------");
 	}
 
-	private void procesar_archivo(String path) throws InvalidFileException {
+	private void procesar_archivo(InputStream in) throws InvalidFileException {
 		try {
-			BufferedReader file = new BufferedReader(new FileReader(path));
+			InputStreamReader inr = new InputStreamReader(in);
+			BufferedReader file = new BufferedReader(inr);
 			String linea = "";
 			String[] arreglo_linea = null;
 			int f = 0;

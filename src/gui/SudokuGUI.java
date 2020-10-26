@@ -22,6 +22,8 @@ import javax.swing.border.EmptyBorder;
 import logica.Celda;
 import logica.InvalidFileException;
 import logica.Sudoku;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
 @SuppressWarnings("serial")
 public class SudokuGUI extends JFrame {
@@ -43,8 +45,9 @@ public class SudokuGUI extends JFrame {
 	}
 	private JPanel contentPane;
 	private JPanel panel_juego;
-
 	private Sudoku juego;
+	private JButton[][] botones;
+	private Reloj reloj;
 
 	/**
 	 * Create the frame.
@@ -54,7 +57,12 @@ public class SudokuGUI extends JFrame {
 
 		try {
 
+			mostrarReglas();
 			juego = new Sudoku();
+			panel_juego = new JPanel();
+			reloj = new Reloj();
+			botones = new JButton[juego.cantFilas()][juego.cantFilas()];
+			JPanel[][] sub_paneles = new JPanel[juego.cantFilasSubpanel()][juego.cantFilasSubpanel()];
 
 			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 			setBounds(100, 100, 600, 597);
@@ -64,174 +72,161 @@ public class SudokuGUI extends JFrame {
 			contentPane.setLayout(null);
 			contentPane.setBackground(new Color(59, 63, 72));
 			setContentPane(contentPane);
+			
+			reloj.setBounds(87, 400, 268, 37);
 
-			panel_juego = new JPanel();
 			panel_juego.setBackground(new Color(59,63,72));
 			panel_juego.setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, Color.BLACK));
 			panel_juego.setBounds(30, 30, 400, 360);
 			panel_juego.setLayout(new GridLayout(3, 0, 0, 0));
 			contentPane.add(panel_juego);
+			contentPane.add(reloj);
 			
 			
-			//////////////
-			
-			JPanel[][] sub_paneles = new JPanel[juego.cantFilasSubpanel()][juego.cantFilasSubpanel()];
-			for (int i=0; i < juego.cantFilasSubpanel(); i++) {
-				for (int j=0; j < juego.cantFilasSubpanel(); j++){
-					sub_paneles[i][j] = new JPanel();
-					sub_paneles[i][j].setLayout(new GridLayout(juego.cantFilasSubpanel(), juego.cantFilasSubpanel(), 0, 0));
-					panel_juego.add(sub_paneles[i][j]);
-					
-					if (i == 0 && j == 0) {
-						sub_paneles[i][j].setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, Color.BLUE));
-					}
-					else {
-						if (i==0) {
-							sub_paneles[i][j].setBorder(BorderFactory.createMatteBorder(4, 0, 4, 4, Color.BLUE));
-						}
-						else {
-							if (j==0) {
-								sub_paneles[i][j].setBorder(BorderFactory.createMatteBorder(0, 4, 4, 4, Color.BLUE));
-							}
-							else {
-								sub_paneles[i][j].setBorder(BorderFactory.createMatteBorder(0, 0, 4, 4, Color.BLUE));
-							}
-						}
-					}
+			JButton botonLeerReglas = new JButton("Leer reglas");
+			botonLeerReglas.addMouseListener(new MouseAdapter() {
+				public void mouseClicked(MouseEvent e) {
+					mostrarReglas();
 				}
-			}
+			});
+			botonLeerReglas.setBounds(442, 72, 120, 34);
+			contentPane.add(botonLeerReglas);
+		
+			configurar_subPaneles(sub_paneles);
 			
-			 JButton[][] botones = new JButton[juego.cantFilas()][juego.cantFilas()];
-			
-			
-			for (int i=0; i < juego.cantFilas(); i++) {
-				int n = (int) i/juego.cantFilasSubpanel();
-				for (int j=0; j < juego.cantFilas(); j++) {
-					int m = (int) j/juego.cantFilasSubpanel(); 
-					Celda c = juego.getCelda(i, j);
-					JButton celdabutton = new JButton();
-					
-					ImageIcon grafico = c.getEntidadGrafica().getGrafico();
-					celdabutton.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
-					if (!c.isEditable()) {
-						celdabutton.setOpaque(true);
-						celdabutton.setBackground(Color.BLUE);
-					}
-
-					celdabutton.addComponentListener(new ComponentAdapter() {
-						@Override
-						public void componentResized(ComponentEvent e) {
-							celdabutton.setIcon(grafico);
-							redimensionar(celdabutton, grafico);
-						}
-					});
-
-					botones[i][j] = celdabutton;
-					sub_paneles[n][m].add(celdabutton);
-					
-					if (juego.esEditable(c)) {
-
-						celdabutton.addMouseListener(new MouseAdapter() {
-							@Override
-							public void mouseClicked(MouseEvent e) {
-
-								juego.accionar(c);
-								redimensionar(celdabutton,grafico);
-								
-								boolean errores[][] = juego.getErrores();
-								for (int k = 0; k < botones.length; k++) {
-									for (int l = 0; l < botones.length; l++) {
-										if (errores[k][l]) {
-											botones[k][l].setBackground(new Color(255,0,0));
-										}
-										else {
-											botones[k][l].setBackground(null);
-										}
-									}
-								}
-								
-								System.out.println("Es valida: " + juego.juego_valido()); //Borrar
-								juego.mostrarTablero(); //BORRAR
-								juego.mostrarErrores();
-
-								if (juego.juego_valido()) {
-									for (int k = 0; k < botones.length; k++) {
-										for (int l = 0; l < botones.length; l++) {
-											botones[k][l].setEnabled(false);
-										}
-									}
-									JOptionPane.showMessageDialog(panel_juego, "Usted ganó");
-								}
-							}
-
-						});
-
-					}
+			JButton boton_comienzo = new JButton("Comenzar");
+			boton_comienzo.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					iniciar_juego(sub_paneles);
+					reloj.iniciar();
+					boton_comienzo.setEnabled(false);
 				}
-			}
+			});
+			boton_comienzo.setBounds(442, 30, 120, 30);
+			contentPane.add(boton_comienzo);
 			
-
-			//////////////
-
-//			for (int i=0; i < juego.cantFilas(); i++) {
-//				for (int j=0; j < juego.cantFilas(); j++) {
-//					Celda c = juego.getCelda(i, j);
-//					JLabel celdalabel = new JLabel();
-//					ImageIcon grafico = c.getEntidadGrafica().getGrafico();
-//
-//					celdalabel.setBorder(BorderFactory.createLineBorder(Color.WHITE));
-//
-//					if (i == 3 || i == 6)
-//						celdalabel.setBorder(BorderFactory.createMatteBorder(4, 1, 1, 1, Color.WHITE));
-//					if (j == 3 || j == 6)
-//						celdalabel.setBorder(BorderFactory.createMatteBorder(1, 4, 1, 1, Color.WHITE));
-//					if ((i == 3 && j == 3) || (i == 3 && j == 6) || (i == 6 && j == 3) || (i == 6 && j == 6))
-//						celdalabel.setBorder(BorderFactory.createMatteBorder(4, 4, 1, 1, Color.WHITE));
-//
-//					panel_juego.add(celdalabel);
-//
-//					celdalabel.addComponentListener(new ComponentAdapter() {
-//						@Override
-//						public void componentResized(ComponentEvent e) {
-//							celdalabel.setIcon(grafico);
-//							redimensionar(celdalabel, grafico);
-//						}
-//					});
-//
-//					celdalabel.addMouseListener(new MouseAdapter() {
-//						@Override
-//						public void mouseClicked(MouseEvent e) {
-//							
-//							buscarpintar_repetidos(celdalabel, c);
-//							
-//							if (juego.esEditable(c)) {
-//								juego.accionar(c);
-//								redimensionar(celdalabel,grafico);
-//								
-//								if (juego.validar_celda(c)) {
-//								}
-//								else {
-//									buscarpintar_repetidos(celdalabel, c);
-//								}
-//								
-//								
-//								
-//
-//								System.out.println("Es valida: " + juego.juego_valido()); //Borrar
-//								juego.mostrarTablero(); //BORRAR
-//
-//							}
-//						}
-//					});
-//
-//				}
-//			}
 		}
 		catch (InvalidFileException err) {
-			err.printStackTrace(); //borrar
 			JOptionPane.showMessageDialog(panel_juego, err.getMessage());
 			System.exit(ERROR);
 		}
+	}
+	
+	private void mostrarReglas() {
+		String informacion = "REGLAS\n" + 
+				"Para ganar, usted debe completar todas las casillas vacías con solo uno de los 9 números romanos disponibles.\n"
+				+ "Una misma fila no puede contener números repetidos.\n"
+				+ "Una misma columna no puede contener números repetidos.\n"
+				+ "Un mismo panel no puede contener números repetidos.\n\n"
+				+ "¡Mucha suerte!";
+		JOptionPane.showMessageDialog(contentPane, informacion);
+		
+	}
+	
+	private void iniciar_juego(JPanel[][] sub_paneles) {
+		
+		for (int i=0; i < juego.cantFilas(); i++) {
+			int n = (int) i/juego.cantFilasSubpanel();
+
+			for (int j=0; j < juego.cantFilas(); j++) {
+				int m = (int) j/juego.cantFilasSubpanel();
+
+				Celda c = juego.getCelda(i, j);
+				JButton celdabutton = new JButton();
+				ImageIcon grafico = c.getEntidadGrafica().getGrafico();
+
+				celdabutton.setBorder(BorderFactory.createMatteBorder(1, 1, 1, 1, Color.BLACK));
+				celdabutton.addComponentListener(new ComponentAdapter() {
+					@Override
+					public void componentResized(ComponentEvent e) {
+						celdabutton.setIcon(grafico);
+						redimensionar(celdabutton, grafico);
+					}
+				});
+
+				botones[i][j] = celdabutton;
+				sub_paneles[n][m].add(celdabutton);
+
+				if (juego.esEditable(c)) {
+
+					celdabutton.addMouseListener(new MouseAdapter() {
+						@Override
+						public void mouseClicked(MouseEvent e) {
+
+							juego.accionar(c);
+							redimensionar(celdabutton,grafico);
+
+
+							boolean errores[][] = juego.getErrores();
+							for (int k = 0; k < botones.length; k++) {
+								for (int l = 0; l < botones.length; l++) {
+									if (errores[k][l]) {
+										botones[k][l].setBackground(new Color(255,0,0));
+									}
+									else {
+										botones[k][l].setBackground(null);
+									}
+								}
+							}
+
+							System.out.println("Es valida: " + juego.juego_valido()); //Borrar
+							juego.mostrarTablero(); //BORRAR
+							juego.mostrarErrores();
+
+							if (juego.juego_valido()) {
+								mostrar_juego_ganado();
+							}
+						}
+
+					});
+
+				}
+			}
+		}
+	}
+	
+	private void mostrar_juego_ganado() {
+		reloj.detener();
+		
+		for (int k = 0; k < botones.length; k++) {
+			for (int l = 0; l < botones.length; l++) {
+				botones[k][l].setEnabled(false);
+			}
+		}
+		
+		int seg = reloj.getSegundos();
+		int min = reloj.getMinutos();
+		int hor = reloj.getHoras();
+		
+		JOptionPane.showMessageDialog(panel_juego, "Usted ganó con el tiempo de \n"
+				+ hor + " horas, " + min + " minutos, " + seg + " segundos.");
+	}
+
+	private void configurar_subPaneles(JPanel[][] sub_paneles) {
+		for (int i=0; i < juego.cantFilasSubpanel(); i++) {
+			for (int j=0; j < juego.cantFilasSubpanel(); j++){
+				sub_paneles[i][j] = new JPanel();
+				sub_paneles[i][j].setLayout(new GridLayout(juego.cantFilasSubpanel(), juego.cantFilasSubpanel(), 0, 0));
+				panel_juego.add(sub_paneles[i][j]);
+				
+				if (i == 0 && j == 0) {
+					sub_paneles[i][j].setBorder(BorderFactory.createMatteBorder(4, 4, 4, 4, Color.BLUE));
+				}
+				else {
+					if (i==0) {
+						sub_paneles[i][j].setBorder(BorderFactory.createMatteBorder(4, 0, 4, 4, Color.BLUE));
+					}
+					else {
+						if (j==0) {
+							sub_paneles[i][j].setBorder(BorderFactory.createMatteBorder(0, 4, 4, 4, Color.BLUE));
+						}
+						else {
+							sub_paneles[i][j].setBorder(BorderFactory.createMatteBorder(0, 0, 4, 4, Color.BLUE));
+						}
+					}
+				}
+			}
+		}		
 	}
 
 	private void redimensionar(JButton label, ImageIcon grafico) {
