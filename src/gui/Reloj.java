@@ -33,8 +33,8 @@ public class Reloj extends JPanel{
 		this.iconos = new ImageIcon[11];
 		this.setBackground(Color.WHITE);
 		this.setBorder(BorderFactory.createMatteBorder(3, 3, 3, 3, Color.BLACK));
-		JLabel dp1 = new JLabel();
-		JLabel dp2 = new JLabel();
+		JLabel dospuntos1 = new JLabel();
+		JLabel dospuntos2 = new JLabel();
 		decenaH = new JLabel();
 		unidadH = new JLabel();
 		decenaM = new JLabel();
@@ -46,13 +46,15 @@ public class Reloj extends JPanel{
 		segundos = 0;
 		
 		organizarImagenes();
-		organizar(dp1, dp2);
+		organizar(dospuntos1, dospuntos2);
+		
 		timer = new Timer (1000, (ActionListener) new ActionListener () {
 			public void actionPerformed(ActionEvent e) {
+				
 				if(segundos<59) {
 					segundos++;
 				}	
-				else if(minutos<59){
+				else if(minutos<59) {
 					minutos++;
 					segundos=0;
 				}
@@ -79,7 +81,7 @@ public class Reloj extends JPanel{
 	}
 	
 	/**
-	 * Organiza los paneles de la gráfica de los "dos puntos".
+	 * Organiza los paneles de la gráfica de los "dos puntos" (delimitador para horas-minutos y minutos-segundos).
 	 * @param paneldosP1 Componente gráfico correspondiente al primer panel de "dos puntos".
 	 * @param paneldosP2 Componente gráfico correspondiente al segundo panel de "dos puntos".
 	 */
@@ -128,6 +130,16 @@ public class Reloj extends JPanel{
 	}
 	
 	/**
+	 * Organiza las imágenes del cronómetro.
+	 */
+	public void organizarImagenes() {
+		
+		for(int i=0; i<this.iconos.length; i++) {
+			iconos[i] = new ImageIcon(getClass().getResource("/img/"+i+"c.png"));
+		}
+	}
+	
+	/**
 	 * Devuelve la cantidad de segundos.
 	 * @return Los segundos corrientes.
 	 */
@@ -151,15 +163,6 @@ public class Reloj extends JPanel{
 		return horas;
 	}
 	
-	/**
-	 * Organiza las imágenes del cronómetro.
-	 */
-	public void organizarImagenes() {
-		
-		for(int i=0; i<this.iconos.length; i++) {
-			iconos[i] = new ImageIcon(getClass().getResource("/img/"+i+"c.png"));
-		}
-	}
 	
 	private void redimensionar(JLabel label, ImageIcon grafico) {
 		Image imagen = grafico.getImage();
